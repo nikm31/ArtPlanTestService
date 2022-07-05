@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.artplan.artplantest.dtos.AnimalDto;
 import ru.artplan.artplantest.dtos.AuthRequest;
 import ru.artplan.artplantest.dtos.AuthResponse;
+import ru.artplan.artplantest.dtos.UserDto;
 import ru.artplan.artplantest.exceptions.DataValidationException;
 import ru.artplan.artplantest.exceptions.ResourceNotFoundException;
 import ru.artplan.artplantest.services.UserService;
@@ -46,7 +47,7 @@ public class UserController {
             }
     )
     @PostMapping("register")
-    public AuthResponse registerUser(@RequestBody AuthRequest user) {
+    public AuthResponse registerUser(@RequestBody UserDto user) {
         return userService.registerNewUser(user);
     }
 

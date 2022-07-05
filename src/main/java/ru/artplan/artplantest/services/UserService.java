@@ -8,10 +8,12 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.artplan.artplantest.dtos.AuthRequest;
 import ru.artplan.artplantest.dtos.AuthResponse;
+import ru.artplan.artplantest.dtos.UserDto;
 import ru.artplan.artplantest.exceptions.DataValidationException;
 import ru.artplan.artplantest.exceptions.ResourceNotFoundException;
 import ru.artplan.artplantest.model.Role;
@@ -31,8 +33,9 @@ public class UserService implements UserDetailsService {
 
     private final RoleService roleService;
 
-    @Lazy
     private final AuthService authService;
+
+    private final BCryptPasswordEncoder passwordEncoder;
 
     @Value("${roles_def.default}")
     private String defaultRole;
@@ -42,7 +45,7 @@ public class UserService implements UserDetailsService {
     }
 
     @Transactional
-    public AuthResponse registerNewUser(AuthRequest userDto) {
+    public AuthResponse registerNewUser(UserDto userDto) {
 
         if (findByUsername(userDto.getUsername()).isPresent()) {
             throw new DataValidationException(List.of("Пользователь уже существует: "+ userDto.getUsername()));
@@ -53,11 +56,12 @@ public class UserService implements UserDetailsService {
 
         User user = new User();
         user.setUsername(userDto.getUsername());
-        user.setPassword(userDto.getPassword());
+        user.setPassword(passwordEncoder.encode(userDto.getPassword()));
+        user.setEmail(userDto.getEmail());
         user.setRoles(List.of(role));
         userRepository.save(user);
 
-        return authService.createAuthToken(userDto);
+        return authService.createAuthToken(new AuthRequest(userDto));
     }
 
     @Override
